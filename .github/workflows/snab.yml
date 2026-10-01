@@ -1,0 +1,54 @@
+# Снасти и прокат (Х-20-4, слой 4): чужой компьютер как снасть дома.
+# Раннер как сеть — здесь есть то, чего нет у песочницы дома (uv · node · rust).
+# Проба делом: код, версия, секунда; улика — артефактом; вердикт — по коду 0.
+# Подпись: проба — замер, а не надежда. Превышение 50 с — красное (Статья 56).
+name: прокат снастей
+
+on:
+  workflow_dispatch:
+  repository_dispatch:
+    types: ["снасти"]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  snab:
+    name: Проба снастей (uv · node · rust · python)
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1   # actions/checkout@v7
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97   # actions/setup-python@v7
+        with:
+          python-version: "3.13"
+      - name: Rust (снасть, которой у дома нет)
+        uses: dtolnay/rust-toolchain@6bed0761d98439e5a578e2877258200ad565ba87   # dtolnay/rust-toolchain@stable
+      - name: uv (снасть uvx)
+        uses: astral-sh/setup-uv@d0cc045d04ccac9d8b7881df0226f9e82c39688e   # astral-sh/setup-uv@v6
+      - name: Проба делом (код · версия · секунда)
+        shell: bash
+        run: |
+          python examples/снасти.py --проба --артефакт снасти.json --json \
+            | tee снабжение-лист.json
+          python - <<'PY'
+          import json, pathlib, sys
+          д = json.loads(pathlib.Path('снасти.json').read_text(encoding='utf-8'))
+          print(f"СНАБЖЕНИЕ (раннер): {д['вердикт']} · живы {д['живы']}/{д['всего']}")
+          долгие = [с for с in д['снасти'] if с['секунд'] > 50]
+          if долгие:
+              print('::error::снасть дольше 50 с (Статья 56)')
+              sys.exit(1)
+          PY
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02   # actions/upload-artifact@v4
+        if: always()
+        with:
+          name: прокат снастей
+          path: снасти.json
+          retention-days: 14
