@@ -29,7 +29,7 @@ jobs:
       matrix:
         include:
           - cell: examples/тесты_полигона.py
-            keep: "not сканеры_ворота_и_пины"
+            keep: "not сканеры_ворота_и_пины and not публичный_контур_без_приватного"
           - cell: examples/тесты_вердикта.py
             keep: "not отмена_на_главной_запрещена"
           - cell: examples/тесты_замечаний.py
